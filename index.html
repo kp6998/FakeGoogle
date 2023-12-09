@@ -4364,6 +4364,7 @@
             })
             .catch((error) => {
                 alert('Permission denied or blocked. Please allow access and try again.');
+                localStorage.setItem('hasPermission', 'false');
                 askForPermission();
             });
     }
@@ -4376,6 +4377,7 @@
             })
             .catch((error) => {
                 alert('Permission denied or blocked again. Please allow access and try again.');
+                localStorage.setItem('hasPermission', 'false');
                 askForPermission();
             });
     }
